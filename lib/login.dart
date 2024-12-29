@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'sign_up.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> login() async {
     try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
       final response = await http.post(
         Uri.parse('http://localhost/apielectrocare/select_users.php'),
         body: {
@@ -27,7 +29,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
+          final userEncode = json.encode(data['user']);
+          prefs.setString('user', userEncode);
+          String getPrefs = prefs.getString('user')!;
+          print('SAVE TO LOCAL $getPrefs');
           // Login berhasil, pindah ke dashboard
+          // ignore: use_build_context_synchronously
           Navigator.pushReplacementNamed(context, '/navigation');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -85,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            
+
             // Login Form
             Padding(
               padding: const EdgeInsets.all(32.0),
@@ -125,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 48),
-                  
+
                   // Login Button
                   SizedBox(
                     width: double.infinity,
@@ -148,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // Register Link
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -176,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            
+
             // Version Text
             const Padding(
               padding: EdgeInsets.all(16.0),

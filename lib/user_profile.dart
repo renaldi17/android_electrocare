@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -11,13 +13,12 @@ class UserProfile extends StatefulWidget {
 
 class _UserProfileState extends State<UserProfile> {
   final formKey = GlobalKey<FormState>();
-  String _id = "";
-  String _nama = '';
-  String _email = '';
-  String _nomor = '';
-  String _pass = '';
-  String _displayName = '';
-  String _userId = '';
+  TextEditingController _id = TextEditingController();
+  TextEditingController _nama = TextEditingController();
+  TextEditingController _email = TextEditingController();
+  TextEditingController _nomor = TextEditingController();
+  TextEditingController _pass = TextEditingController();
+  TextEditingController _displayName = TextEditingController();
 
   @override
   void initState() {
@@ -26,17 +27,25 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Future<void> _fetchUserProfile() async {
-    final response = await http.get(Uri.parse('http://localhost/apielectrocare/get_user.php?id=$_userId'));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String getPrefs = prefs.getString('user')!;
+    final userFromStorage = json.decode(getPrefs) as Map<String, dynamic>;
+
+    final response = await http.get(Uri.parse(
+        'http://localhost/apielectrocare/get_user.php?id=${userFromStorage['id']}'));
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
       if (responseData != null && responseData['status'] == 'success') {
         setState(() {
-          _id = responseData['user']['id'];
-          _nama = responseData['user']['nama'];
-          _email = responseData['user']['email'];
-          _nomor = responseData['user']['nomor'];
-          _displayName = responseData['user']['username'];
+          _id = TextEditingController(text: responseData['user']['id']);
+          _nama = TextEditingController(text: responseData['user']['nama']);
+          _email = TextEditingController(text: responseData['user']['email']);
+          _nomor = TextEditingController(text: responseData['user']['nomor']);
+          _pass = TextEditingController(text: responseData['user']['pass']);
+          _displayName =
+              TextEditingController(text: responseData['user']['username']);
         });
       }
     }
@@ -71,19 +80,24 @@ class _UserProfileState extends State<UserProfile> {
                     padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
                     child: Column(
                       children: [
-                        _buildProfileField('ID', _id, (value) => _id = value, enabled: false),
+                        _buildProfileField('ID', _id, (value) => {},
+                            enabled: false),
                         const Divider(),
-                        _buildProfileField('Username', _displayName, (value) => _displayName = value),
+                        _buildProfileField(
+                            'Username', _displayName, (value) => {}),
                         const Divider(),
-                        _buildProfileField('Nama', _nama, (value) => _nama = value),
+                        _buildProfileField('Nama', _nama, (value) => {}),
                         const Divider(),
-                        _buildProfileField('Email', _email, (value) => _email = value),
+                        _buildProfileField('Email', _email, (value) => {}),
                         const Divider(),
-                        _buildProfileField('Password', _pass, (value) => _pass = value, obscureText: true),
+                        _buildProfileField('Password', _pass, (value) => {},
+                            obscureText: true),
                         const Divider(),
-                        _buildProfileField('No. Handphone', _nomor, (value) => _nomor = value),
+                        _buildProfileField(
+                            'No. Handphone', _nomor, (value) => {}),
                         const Divider(),
-                        _buildProfileFieldWithoutEdit('Versi Aplikasi', 'Electrocare 1.0'),
+                        _buildProfileFieldWithoutEdit(
+                            'Versi Aplikasi', 'Electrocare 1.0'),
                       ],
                     ),
                   ),
@@ -113,12 +127,13 @@ class _UserProfileState extends State<UserProfile> {
                       child: CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.grey[200],
-                        child: const Icon(Icons.person, size: 50, color: Colors.grey),
+                        child: const Icon(Icons.person,
+                            size: 50, color: Colors.grey),
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      _nama,
+                      _nama.text,
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 20,
@@ -135,7 +150,8 @@ class _UserProfileState extends State<UserProfile> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (formKey.currentState!.validate()) {
-            updateData(_id, _displayName, _email, _pass, _nomor);
+            updateData(_id.text, _nama.text ,_displayName.text, _email.text, _pass.text,
+                _nomor.text);
           }
         },
         child: const Icon(Icons.save),
@@ -143,12 +159,15 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
-  void updateData(String id, String name, String email, String password, String nomor) async {
+  void updateData(String id, String name, String username, String email, String password,
+      String nomor) async {
     String uri = "http://localhost/apielectrocare/update_user.php";
     try {
+
       final response = await http.post(Uri.parse(uri), body: {
         "id": id,
         "nama": name,
+        "username": username,
         "email": email,
         "nomor": nomor,
         "password": password
@@ -165,7 +184,9 @@ class _UserProfileState extends State<UserProfile> {
     }
   }
 
-  Widget _buildProfileField(String label, String value, Function(String) onChanged, {bool enabled = true, bool obscureText = false}) {
+  Widget _buildProfileField(
+      String label, TextEditingController value, Function(String) onChanged,
+      {bool enabled = true, bool obscureText = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -179,8 +200,8 @@ class _UserProfileState extends State<UserProfile> {
             ),
           ),
           TextFormField(
+            controller: value,
             onChanged: enabled ? onChanged : null,
-            initialValue: value,
             enabled: enabled,
             obscureText: obscureText,
             decoration: InputDecoration(

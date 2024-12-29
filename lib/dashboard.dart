@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'laporan.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -25,19 +26,21 @@ class _DashboardScreenState extends State<Dashboard> {
   }
 
   Future<void> _fetchUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     try {
-      final response = await http.post(
-        Uri.parse('http://localhost/apielectrocare/select_user.php'),
-        body: {
-          'username': widget.username,
-        },
+      String getPrefs = prefs.getString('user')!;
+      final userFromStorage = json.decode(getPrefs) as Map<String, dynamic>;
+
+      final response = await http.get(
+        Uri.parse('http://localhost/apielectrocare/get_user.php?id=${userFromStorage['id']}'),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
           setState(() {
-            _userName = data['users']['username'];
+            _userName = data['user']['username'];
           });
         } else {
           print('Error message from server: ${data['message']}');
@@ -52,7 +55,8 @@ class _DashboardScreenState extends State<Dashboard> {
 
   Future<void> _fetchTransactions() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost/apielectrocare/select_laporan.php'));
+      final response = await http
+          .get(Uri.parse('http://localhost/apielectrocare/select_laporan.php'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
@@ -91,7 +95,7 @@ class _DashboardScreenState extends State<Dashboard> {
                 children: [
                   Center(
                     child: Image.asset(
-                      'assets/electrocare_logo.png', 
+                      'assets/electrocare_logo.png',
                       height: 40,
                       width: 40,
                     ),
@@ -117,7 +121,8 @@ class _DashboardScreenState extends State<Dashboard> {
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.account_balance_wallet, color: Colors.white),
+                            Icon(Icons.account_balance_wallet,
+                                color: Colors.white),
                             SizedBox(width: 10),
                             Text(
                               'Saldo Rekening',
@@ -130,9 +135,9 @@ class _DashboardScreenState extends State<Dashboard> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _isBalanceVisible 
-                                ? 'Rp. ${_totalNominal.toStringAsFixed(2)}'
-                                : 'Rp. ••••••••••',
+                              _isBalanceVisible
+                                  ? 'Rp. ${_totalNominal.toStringAsFixed(2)}'
+                                  : 'Rp. ••••••••••',
                               style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -141,11 +146,10 @@ class _DashboardScreenState extends State<Dashboard> {
                             ),
                             IconButton(
                               icon: Icon(
-                                _isBalanceVisible 
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                                color: Colors.white
-                              ),
+                                  _isBalanceVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.white),
                               onPressed: () {
                                 setState(() {
                                   _isBalanceVisible = !_isBalanceVisible;
@@ -195,10 +199,14 @@ class _DashboardScreenState extends State<Dashboard> {
                   Expanded(
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
-                      itemCount: _transactions.length > 3 ? 3 : _transactions.length,
+                      itemCount:
+                          _transactions.length > 3 ? 3 : _transactions.length,
                       itemBuilder: (context, index) {
                         final transaction = _transactions[index];
-                        Color amountColor = transaction['kategori'] == 'pemasukkan' ? Colors.green : Colors.red;
+                        Color amountColor =
+                            transaction['kategori'] == 'pemasukkan'
+                                ? Colors.green
+                                : Colors.red;
                         return Column(
                           children: [
                             _buildTransactionItem(
@@ -218,7 +226,8 @@ class _DashboardScreenState extends State<Dashboard> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => LaporanScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => LaporanScreen()),
                       );
                     },
                     child: const Text(
