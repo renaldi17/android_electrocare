@@ -13,7 +13,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,7 +38,9 @@ class MyApp extends StatelessWidget {
       ),
       home: const LoginScreen(),
       routes: {
-        '/navigation': (context) => const NavigationController(username: "User"),
+        '/login': (context) => const LoginScreen(),
+        '/navigation': (context) =>
+            const NavigationController(username: "User"),
         '/dashboard': (context) => const Dashboard(username: "User"),
         '/pembukuan': (context) => const PembukuanPage(),
         '/laporan': (context) => const LaporanScreen(),
@@ -132,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }

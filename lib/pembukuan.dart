@@ -12,7 +12,7 @@ class PembukuanPage extends StatefulWidget {
 class _PembukuanPageState extends State<PembukuanPage> {
   final TextEditingController _nominalController = TextEditingController();
   final TextEditingController _keteranganController = TextEditingController();
-  String _kategori = 'Pemasukkan'; // Default value
+  String _kategori = 'Pemasukkan';
   DateTime? _selectedDate;
 
   Future<void> _submitData() async {
@@ -20,69 +20,69 @@ class _PembukuanPageState extends State<PembukuanPage> {
 
     // Validate input
     if (nominal.isEmpty || double.tryParse(nominal) == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Nominal harus berupa angka dan tidak boleh kosong'),
-                backgroundColor: Colors.red,
-            ),
-        );
-        return; // Stop execution if any field is empty or invalid
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nominal harus berupa angka dan tidak boleh kosong'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
-    final String tanggal = _selectedDate != null ? _selectedDate!.toIso8601String().split('T')[0] : '';
+    final String tanggal = _selectedDate != null
+        ? _selectedDate!.toIso8601String().split('T')[0]
+        : '';
     final String keterangan = _keteranganController.text;
 
     // Validate input
     if (nominal.isEmpty || tanggal.isEmpty || keterangan.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Data Belum Terisi Semua'),
-                backgroundColor: Colors.red,
-            ),
-        );
-        return; // Stop execution if any field is empty
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data Belum Terisi Semua'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
     final response = await http.post(
-        Uri.parse('http://localhost/apielectrocare/insert_pembukuan.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-            'kategori': _kategori,
-            'nominal': nominal,
-            'tanggal': tanggal,
-            'keterangan': keterangan,
-        },
+      Uri.parse('http://localhost/apielectrocare/insert_pembukuan.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'kategori': _kategori,
+        'nominal': nominal,
+        'tanggal': tanggal,
+        'keterangan': keterangan,
+      },
     );
 
     if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['status'] == 'success') {
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                content: Text('Data Berhasil Ditambahkan'),
-                backgroundColor: Colors.green,
-            ),
-            );
-
-            // Reset fields after successful submission
-            _nominalController.clear();
-            _keteranganController.clear();
-            setState(() {
-                _kategori = 'Pemasukkan'; // Reset category to default
-                _selectedDate = null; // Reset date
-            });
-        } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(responseData['message'])),
-            );
-        }
-    } else {
-        print('Error: ${response.statusCode}');
-        print('Response body: ${response.body}');
+      final responseData = json.decode(response.body);
+      if (responseData['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to submit data')),
+          const SnackBar(
+            content: Text('Data Berhasil Ditambahkan'),
+            backgroundColor: Colors.green,
+          ),
         );
+
+        _nominalController.clear();
+        _keteranganController.clear();
+        setState(() {
+          _kategori = 'Pemasukkan';
+          _selectedDate = null;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['message'])),
+        );
+      }
+    } else {
+      print('Error: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to submit data')),
+      );
     }
   }
 
@@ -137,7 +137,7 @@ class _PembukuanPageState extends State<PembukuanPage> {
               child: DropdownButton<String>(
                 value: _kategori,
                 isExpanded: true,
-                underline: SizedBox(), // Remove underline
+                underline: SizedBox(),
                 onChanged: (String? newValue) {
                   setState(() {
                     _kategori = newValue!;
@@ -215,7 +215,7 @@ class _PembukuanPageState extends State<PembukuanPage> {
               child: ElevatedButton(
                 onPressed: _submitData,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF1D1D), // Change to red
+                  backgroundColor: const Color(0xFFFF1D1D),
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -226,7 +226,7 @@ class _PembukuanPageState extends State<PembukuanPage> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // Change text color to white
+                    color: Colors.white,
                   ),
                 ),
               ),

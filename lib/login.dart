@@ -33,8 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
           prefs.setString('user', userEncode);
           String getPrefs = prefs.getString('user')!;
           print('SAVE TO LOCAL $getPrefs');
-          // Login berhasil, pindah ke dashboard
-          // ignore: use_build_context_synchronously
+
           Navigator.pushReplacementNamed(context, '/navigation');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -61,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Red curved container with logo
             Container(
               height: 300,
               decoration: const BoxDecoration(

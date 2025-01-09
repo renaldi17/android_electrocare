@@ -27,7 +27,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  Future<void> signUp(String nama, String email, String username, String nomor, String pass) async {
+  Future<void> signUp(String nama, String email, String username, String nomor,
+      String pass) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost/apielectrocare/insert_users.php'),
@@ -50,11 +51,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          
-          // Tunggu sebentar agar user bisa membaca pesan
+
           await Future.delayed(const Duration(seconds: 2));
-          
-          // Kembali ke halaman login
+
           if (!context.mounted) return;
           Navigator.pushReplacement(
             context,
@@ -139,7 +138,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   const Text(
                     'Nama',
                     style: TextStyle(
@@ -215,7 +214,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Debug print untuk memeriksa nilai controller
                         print('Username: ${usernameController.text}');
                         print('Nama: ${namaController.text}');
                         print('Email: ${emailController.text}');
@@ -267,7 +265,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // Login Link
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),

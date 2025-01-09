@@ -6,7 +6,8 @@ import 'user_profile.dart';
 
 class NavigationController extends StatefulWidget {
   final String username;
-  const NavigationController({Key? key, required this.username}) : super(key: key);
+  const NavigationController({Key? key, required this.username})
+      : super(key: key);
 
   @override
   State<NavigationController> createState() => _NavigationControllerState();
@@ -14,13 +15,13 @@ class NavigationController extends StatefulWidget {
 
 class _NavigationControllerState extends State<NavigationController> {
   int _selectedIndex = 0;
-  
+
   List<Widget> get _pages => [
-    Dashboard(username: widget.username),
-    const PembukuanPage(),
-    const LaporanScreen(),
-    const UserProfile(),
-  ];
+        Dashboard(username: widget.username),
+        const PembukuanPage(),
+        const LaporanScreen(),
+        const UserProfile(),
+      ];
 
   void _onItemTapped(int index) {
     setState(() {

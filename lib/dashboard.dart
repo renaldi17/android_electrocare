@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'laporan.dart';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -21,8 +22,7 @@ class _DashboardScreenState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-    _fetchUserDetails();
-    _fetchTransactions();
+    refreshData();
   }
 
   Future<void> _fetchUserDetails() async {
@@ -33,7 +33,8 @@ class _DashboardScreenState extends State<Dashboard> {
       final userFromStorage = json.decode(getPrefs) as Map<String, dynamic>;
 
       final response = await http.get(
-        Uri.parse('http://localhost/apielectrocare/get_user.php?id=${userFromStorage['id']}'),
+        Uri.parse(
+            'http://localhost/apielectrocare/get_user.php?id=${userFromStorage['id']}'),
       );
 
       if (response.statusCode == 200) {
@@ -62,7 +63,14 @@ class _DashboardScreenState extends State<Dashboard> {
         if (data['status'] == 'success') {
           setState(() {
             _transactions = data['data'];
-            _totalNominal = data['totalNominal'];
+            _totalNominal = 0.0;
+            for (var transaction in _transactions) {
+              if (transaction['kategori'] == 'pemasukkan') {
+                _totalNominal += double.parse(transaction['nominal']);
+              } else if (transaction['kategori'] == 'pengeluaran') {
+                _totalNominal -= double.parse(transaction['nominal']);
+              }
+            }
           });
         } else {
           print(data['message']);
@@ -75,8 +83,14 @@ class _DashboardScreenState extends State<Dashboard> {
     }
   }
 
+  void refreshData() {
+    _fetchUserDetails();
+    _fetchTransactions();
+  }
+
   @override
   Widget build(BuildContext context) {
+    refreshData();
     return Scaffold(
       body: Column(
         children: [
@@ -136,7 +150,7 @@ class _DashboardScreenState extends State<Dashboard> {
                           children: [
                             Text(
                               _isBalanceVisible
-                                  ? 'Rp. ${_totalNominal.toStringAsFixed(2)}'
+                                  ? 'Rp. ${NumberFormat("#,###").format(_totalNominal.toInt())}'
                                   : 'Rp. ••••••••••',
                               style: const TextStyle(
                                 fontSize: 28,
@@ -211,7 +225,7 @@ class _DashboardScreenState extends State<Dashboard> {
                           children: [
                             _buildTransactionItem(
                               transaction['kategori'] ?? 'No Category',
-                              'Rp. ${transaction['nominal']?.toString() ?? '0'}',
+                              'Rp. ${NumberFormat("#,###").format(int.parse(transaction['nominal'].toString()))}',
                               transaction['tanggal'] ?? 'No Date',
                               transaction['keterangan'] ?? 'No Description',
                               amountColor,
@@ -230,11 +244,16 @@ class _DashboardScreenState extends State<Dashboard> {
                             builder: (context) => LaporanScreen()),
                       );
                     },
-                    child: const Text(
-                      'Lihat Lainnya',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
+                    child: const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          'Lihat Lainnya',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     ),
                   ),

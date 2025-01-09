@@ -62,7 +62,6 @@ class _UserProfileState extends State<UserProfile> {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Red curved container with profile image
                   Container(
                     width: double.infinity,
                     height: 200,
@@ -80,9 +79,9 @@ class _UserProfileState extends State<UserProfile> {
                     padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
                     child: Column(
                       children: [
-                        _buildProfileField('ID', _id, (value) => {},
-                            enabled: false),
-                        const Divider(),
+                        // _buildProfileField('ID', _id, (value) => {},
+                        //     enabled: false),
+                        // const Divider(),
                         _buildProfileField(
                             'Username', _displayName, (value) => {}),
                         const Divider(),
@@ -98,13 +97,38 @@ class _UserProfileState extends State<UserProfile> {
                         const Divider(),
                         _buildProfileFieldWithoutEdit(
                             'Versi Aplikasi', 'Electrocare 1.0'),
+                        const SizedBox(
+                            height: 20), // Add space before logout button
+                        ElevatedButton(
+                          onPressed: () async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            await prefs.remove('user'); // Remove user data
+                            Navigator.pushReplacementNamed(
+                                context, '/login'); // Navigate to login
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color(0xFFFF1515), // Set button color
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 30),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: const Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-
-              // Profile image and name - positioned on top of the curve
               Positioned(
                 top: 130,
                 left: 0,
@@ -150,8 +174,8 @@ class _UserProfileState extends State<UserProfile> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (formKey.currentState!.validate()) {
-            updateData(_id.text, _nama.text ,_displayName.text, _email.text, _pass.text,
-                _nomor.text);
+            updateData(_id.text, _nama.text, _displayName.text, _email.text,
+                _pass.text, _nomor.text);
           }
         },
         child: const Icon(Icons.save),
@@ -159,11 +183,10 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
-  void updateData(String id, String name, String username, String email, String password,
-      String nomor) async {
+  void updateData(String id, String name, String username, String email,
+      String password, String nomor) async {
     String uri = "http://localhost/apielectrocare/update_user.php";
     try {
-
       final response = await http.post(Uri.parse(uri), body: {
         "id": id,
         "nama": name,
@@ -175,7 +198,13 @@ class _UserProfileState extends State<UserProfile> {
 
       if (response.statusCode == 200) {
         print('Data updated successfully');
-        // Optionally show a success message or navigate back
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data Berhasil Diubah!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _fetchUserProfile();
       } else {
         print('Failed to update data');
       }
